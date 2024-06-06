@@ -52,8 +52,10 @@
     </style>
     <script>
         async function fetchJobTitle(userId) {
+            console.log(`Fetching job title for user ID: ${userId}`);
             const response = await fetch(`https://your-app-name.herokuapp.com/getJobTitle?user_id=${userId}`);
             const data = await response.json();
+            console.log('Fetched job title:', data.job_title);
             document.getElementById('jobTitle').value = data.job_title;
             document.getElementById('userId').value = userId;
         }
@@ -69,34 +71,46 @@
         async function submitForm(event) {
             event.preventDefault();
             const formData = new FormData(event.target);
+            const firstName = formData.get('firstName');
             const lastName = formData.get('lastName');
+            const emailAddress = formData.get('emailAddress');
+            const company = formData.get('company');
             const userId = formData.get('userId');
             const jobTitle = formData.get('jobTitle');
             const concatenatedLastName = `${lastName} MFDA#${userId}`;
 
             const data = {
                 fields: [
-                    { key: 'firstName', value: formData.get('firstName') },
+                    { key: 'firstName', value: firstName },
                     { key: 'lastName', value: concatenatedLastName },
-                    { key: 'emailAddress', value: formData.get('emailAddress') },
-                    { key: 'company', value: formData.get('company') },
+                    { key: 'emailAddress', value: emailAddress },
+                    { key: 'company', value: company },
                     { key: 'jobTitle', value: jobTitle }
                 ]
             };
 
-            const response = await fetch('https://api.webinar.net/v2/webinars/925467523/registrants', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer 37f9ea00-121f-4b17-8514-bb1e0821310d'
-                },
-                body: JSON.stringify(data)
-            });
+            console.log('Submitting data:', data);
 
-            if (response.ok) {
-                alert('Registration successful');
-            } else {
-                alert('Registration failed');
+            try {
+                const response = await fetch('https://api.webinar.net/v2/webinars/925467523/registrants', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer 37f9ea00-121f-4b17-8514-bb1e0821310d'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert('Registration successful');
+                } else {
+                    const errorData = await response.json();
+                    console.error('Registration failed:', errorData);
+                    alert('Registration failed');
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('An error occurred while submitting the form');
             }
         }
     </script>
